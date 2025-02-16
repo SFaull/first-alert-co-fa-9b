@@ -91,10 +91,18 @@ bool output_enabled = false;
 
 #define TMR0VAL     200
 
+
 __inline void setLeds(bool on)
 {
-    PORTBbits.RB5 = on ? 0 : 1; 
-    PORTBbits.RB6 = on ? 0 : 1;  
+    PORTBbits.RB5 = !on; 
+    PORTBbits.RB6 = !on;
+}
+
+__inline void enableOutput(bool enable)
+{
+    PIE1bits.TMR1IE = enable; // interrupt
+    output_enabled = enable; // flag
+    setLeds(enable);          // led state
 }
 
 __inline void setTimer(uint16_t val)
@@ -163,9 +171,7 @@ void main(void)
     {
         if(PORTAbits.RA2) // if button not pressed
         {        
-            setLeds(false);
-            PIE1bits.TMR1IE = 0; // Disabled Timer1 interrupt
-            output_enabled = false;
+            enableOutput(false);
             lut_index = 0;
             millis = 0;
         }
@@ -175,26 +181,20 @@ void main(void)
             
             if(millis < pNoteDef->start)
             {
-                PIE1bits.TMR1IE = 0; // buzzer off
-                output_enabled = false;
-                setLeds(false);
+                enableOutput(false);
             }
             else if(millis > pNoteDef->start && millis < pNoteDef->end)
             {
                 // if the buzzer is off, turn it on at the correct frequency
-                if(!PIE1bits.TMR1IE)
+                if(!output_enabled)
                 {
                     timer_value = pNoteDef->value;
-                    PIE1bits.TMR1IE = 1; // buzzer on
-                    setLeds(true);
-                    output_enabled = true;
+                    enableOutput(true);
                 }
             }
             else if (millis > pNoteDef->end)
             {
-                PIE1bits.TMR1IE = 0; // buzzer off
-                setLeds(false);
-                output_enabled = false;
+                enableOutput(false);
                 lut_index++;
                 
                 if(lut_index >= NOTE_COUNT)
