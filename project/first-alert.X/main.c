@@ -103,61 +103,59 @@ __inline void setTimer(uint16_t val)
     TMR1L = (uint8_t)val;
 }
 
-void __interrupt() ISR(void) {
-#if 1
-    if (INTCONbits.T0IF) {
+void __interrupt() ISR(void) 
+{
+    if (INTCONbits.T0IF) 
+    {
         INTCONbits.T0IF = 0; // Clear Timer0 interrupt flag
         TMR0 = TMR0VAL; // Reload for next 1ms period
         millis++; // Increment milliseconds counter
     }
-#endif
-#if 1
-    if (PIR1bits.TMR1IF) {
+    if (PIR1bits.TMR1IF) 
+    {
         PIR1bits.TMR1IF = 0; // Clear Timer1 interrupt flag
         setTimer(timer_value);
         if(output_enabled)
             PORTCbits.RC5 ^= 1; // Toggle RC5
     }
-#endif
 }
 
 void main(void) 
 {
     // Configure internal oscillator to 8MHz
     OSCCON = 0b01110000; // Select 8MHz internal oscillator
-
-    // Configure LEDs (RB4, RB5 & RB6) as output
-    ANSELHbits.ANS11 = 0; // Ensure AN10/RB4 is a digital pin
-    ANSELHbits.ANS11 = 0; // Ensure AN11/RB5 is a digital pin
-    TRISB4 = 0;     // output
-    TRISB5 = 0;     // output
-    TRISB6 = 0;     // output
-    RB4 = 1;        // off
-    RB5 = 1;        // off
-    RB6 = 1;        // off
     
-    // Configure Button (RA2) as input with weak pullup enabled
-    ANSELbits.ANS2 = 0; // Ensure RA2 is a digital pin
-    TRISA2 = 1; // Set RA2 as input
-    WPUA2 = 1;  // Enable weak pull-up on RA2
-    nRABPU = 0; // Enable individual weak pull-ups
-    
-    // Configure piezzo output
-    TRISC5 = 0;     // output
-    RC5 = 1;        // off
-    
-    // configure timer 0
+    // Configure timer 0 for 1ms ISR
     OPTION_REG = 0b00000100; // Prescaler 1:32 (Timer0 clock = 250kHz with 8MHz Fosc)
     TMR0 = TMR0VAL; // Preload for 1ms overflow (256 - (250000 / 1000))
     INTCONbits.T0IE = 1; // Enable Timer0 interrupt
     
-    
-    // configure timer 1
+    // Configure timer 1
     T1CON = 0b00000001; // Prescaler 1:1, Timer1 ON
     setTimer(timer_value);
     PIE1bits.TMR1IE = 1; // Enable Timer1 interrupt
     
+    // Configure LEDs (RB4, RB5 & RB6) as output
+    ANSELHbits.ANS11 = 0; // Ensure AN10/RB4 is a digital pin
+    ANSELHbits.ANS11 = 0; // Ensure AN11/RB5 is a digital pin
+    TRISBbits.TRISB4 = 0;     // output
+    TRISBbits.TRISB5 = 0;     // output
+    TRISBbits.TRISB6 = 0;     // output
+    PORTBbits.RB4 = 1;        // off
+    PORTBbits.RB5 = 1;        // off
+    PORTBbits.RB6 = 1;        // off
     
+    // Configure Button (RA2) as input with weak pullup enabled
+    ANSELbits.ANS2 = 0; // Ensure RA2 is a digital pin
+    TRISAbits.TRISA2  = 1; // Set RA2 as input
+    WPUAbits.WPUA2 = 1;  // Enable weak pull-up on RA2
+    OPTION_REGbits.nRABPU = 0; // Enable individual weak pull-ups
+    
+    // Configure piezzo output
+    TRISCbits.TRISC5 = 0;     // output
+    PORTCbits.RC5 = 1;        // off
+    
+    // enable interrupts
     INTCONbits.PEIE = 1; // Enable peripheral interrupts
     INTCONbits.GIE = 1; // Enable global interrupts
     
@@ -165,6 +163,7 @@ void main(void)
     {
         if(PORTAbits.RA2) // if button not pressed
         {        
+            setLeds(false);
             PIE1bits.TMR1IE = 0; // Disabled Timer1 interrupt
             output_enabled = false;
             lut_index = 0;
