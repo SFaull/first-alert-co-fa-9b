@@ -7,9 +7,16 @@ In this demo the song is All Star by Smashmouth.
 Attatch PICkit programmer to pads on the PCB as shown in the photo.
 The solder link next to the the ICSP clock pin marked "PR" must be broken otherwise programming will fail
 
-[Programming pinout](resources/programming-pinout.png)
+![Programming pinout](resources/programming-pinout.png)
+
+**DISCLAIMER:** This will overwrite the original firmware on the MCU and the device will no longer function as a Carbon Monoxide Alarm.
+Readout protection is enabled on the MCU so it is not possible to make a backup to restore the original firmware.
 
 # MIDI Analyser
+
+To load a custom midi file, a python script [midi-analyser.py](tools/midi-analyser.py) is provided to convert a midi file to an array which can be interpretted by the application.
+
+Usage:
 
 ``` sh
 # Navigate to the tools directory
@@ -33,4 +40,15 @@ If successful, the script will print information about each midi note on a new l
 The reg value represents the 16-bit value that must be loaded into the Timer1 register to play a note of the correct frequency.
 The start and end values are millisecond timestamps denoting the start and end of the note relative to the start of playback.
 
-Copy the reg, start and end values into the lookup table, ensuring the size is adjusted accordingly.
+Copy the reg, start and end values into the lookup table in [main.c](project/first-alert.X/main.c), ensuring the size is adjusted accordingly.
+
+``` c
+#define NOTE_COUNT  0 /* number of LUT entries */
+const note_def_t song_lut[NOTE_COUNT] = {
+    /* 
+        {timer value, start time, end time},
+        ...
+        ...
+    */
+}
+```
