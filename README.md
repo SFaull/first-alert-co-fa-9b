@@ -14,7 +14,7 @@ The solder link next to the ICSP clock pin marked "PR" must be broken otherwise 
 
 ![Programming pinout](resources/programming-pinout.png)
 
-Either compiler and flash the [project](project/first-alert.X/) with MPLAB X IDE or download the binary and flash with MPLAB IPE.
+Either compiler and flash the [project](project/first-alert.X/) with MPLAB X IDE or download the hex file from releases and flash with MPLAB IPE.
 
 **DISCLAIMER:** This will overwrite the original firmware on the MCU and the device will no longer function as a Carbon Monoxide Alarm.
 Readout protection is enabled on the MCU so it is not possible to make a backup of the original firmware binary.
